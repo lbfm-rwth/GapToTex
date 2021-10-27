@@ -108,7 +108,7 @@ for FILE in [f for f in os.listdir(IN) if os.path.isfile(os.path.join(IN, f))] :
 
     # For some reason, the first command outputs an additional empty line at the beginning
     with open(DUMPFILE, mode='w') as dumpfile:
-        writeline(proc.stdin, '"Run GAP file";\n')
+        writeline(proc.stdin, '"Start GAP";\n')
         # Some people might configure GAP to load additional packages etc.
         # which might produce additional output on startup.
         time.sleep(DELAY)
@@ -143,8 +143,21 @@ for FILE in [f for f in os.listdir(IN) if os.path.isfile(os.path.join(IN, f))] :
 
                 inline = ''
 
+    # Wait for GAP to finish before proceeding
+    with open(DUMPFILE, mode='w') as dumpfile:
+        writeline(proc.stdin, '"Quit GAP";\n')
+        readline(proc.stdout, dumpfile)
+
     # Start GAP with large terminal
     proc = Popen([GAP, '-q', '-o', MEMORY, '-x', '120'], stdin=PIPE, stdout=PIPE, stderr=STDOUT,encoding='utf8')
+
+    # For some reason, the first command outputs an additional empty line at the beginning
+    with open(DUMPFILE, mode='w') as dumpfile:
+        writeline(proc.stdin, '"Start GAP";\n')
+        # Some people might configure GAP to load additional packages etc.
+        # which might produce additional output on startup.
+        time.sleep(DELAY)
+        readlines(proc.stdout, dumpfile)
 
     # Create LaTeX file with GAPDoc
     writeline(proc.stdin, 'r := rec(content := ReadAll(InputTextFile("%s")), name := "Example");;\n' % TMPFILE)
@@ -154,10 +167,7 @@ for FILE in [f for f in os.listdir(IN) if os.path.isfile(os.path.join(IN, f))] :
 
     # Wait for GAP to finish before proceeding
     with open(DUMPFILE, mode='w') as dumpfile:
-        writeline(proc.stdin, '"Close GAP file";\n')
-        # Some people might configure GAP to load additional packages etc.
-        # which might produce additional output on startup.
-        time.sleep(DELAY)
+        writeline(proc.stdin, '"Quit GAP";\n')
         readline(proc.stdout, dumpfile)
 
 # -------- #
