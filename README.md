@@ -14,8 +14,18 @@ To compile the `.tex` files, you need the header from `Preamble.tex` in your doc
 
 # Example
 
-We include an example file called `example.g` in the `in/` directory.
+We include an example file called `example.g` in the `in/` directory
+and an example dependency called `dependency.g` in the `lib/` directory.
 You may run the script and insert `\input{out/example.tex}` into the document body of `Preamble.tex` if you wish to test out the LaTeX compilation.
+
+# Troubleshooting
+
+If you have configured your GAP installation to load additional packages, etc.
+this might result in additional output on startup.
+In order to prevent the script from breaking
+and producing wrong (or no) output in such a case,
+you can adjust the parameter `DELAY` in `GapToTex.py` to your needs.
+The parameter is set to `0` by default.
 
 ## Dependencies
 - GAP

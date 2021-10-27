@@ -4,6 +4,7 @@ from subprocess import Popen, PIPE, STDOUT
 import errno
 import signal
 import functools
+import time
 
 # ----------------- #
 # Global Parameters #
@@ -19,10 +20,17 @@ GAP = '/bin/gap.sh'
 if sys.argv[1:]:
     GAP = sys.argv[1]
 
+# Delay after starting GAP, in sec
+DELAY = 10
+# Timeout for trying to read a line after a successful read, in sec
 TIMEOUT = 0.2
+# Memory for GAP session
 MEMORY = '3G'
+# Input directory
 IN = 'in'
+# Output directory
 OUT = 'out'
+# Temporary files
 TMPFILE = '%s/%s' % (OUT, 'tmp.txt')
 DUMPFILE = '%s/%s' % (OUT, 'dump.txt')
 
@@ -101,6 +109,9 @@ for FILE in [f for f in os.listdir(IN) if os.path.isfile(os.path.join(IN, f))] :
     # For some reason, the first command outputs an additional empty line at the beginning
     with open(DUMPFILE, mode='w') as dumpfile:
         writeline(proc.stdin, '"Run GAP file";\n')
+        # Some people might configure GAP to load additional packages etc.
+        # which might produce additional output on startup.
+        time.sleep(DELAY)
         readlines(proc.stdout, dumpfile)
 
     # Main communication with GAP
@@ -144,6 +155,9 @@ for FILE in [f for f in os.listdir(IN) if os.path.isfile(os.path.join(IN, f))] :
     # Wait for GAP to finish before proceeding
     with open(DUMPFILE, mode='w') as dumpfile:
         writeline(proc.stdin, '"Close GAP file";\n')
+        # Some people might configure GAP to load additional packages etc.
+        # which might produce additional output on startup.
+        time.sleep(DELAY)
         readline(proc.stdout, dumpfile)
 
 # -------- #
