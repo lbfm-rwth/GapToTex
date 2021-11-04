@@ -21,7 +21,7 @@ if sys.argv[1:]:
     GAP = sys.argv[1]
 
 # Delay after starting GAP, in sec
-DELAY = 10
+DELAY = 0
 # Timeout for trying to read a line after a successful read, in sec
 TIMEOUT = 0.2
 # Memory for GAP session
@@ -143,27 +143,13 @@ for FILE in [f for f in os.listdir(IN) if os.path.isfile(os.path.join(IN, f))] :
 
                 inline = ''
 
-    # Wait for GAP to finish before proceeding
-    with open(DUMPFILE, mode='w') as dumpfile:
-        writeline(proc.stdin, '"Quit GAP";\n')
-        readline(proc.stdout, dumpfile)
-
-    # Start GAP with large terminal
-    proc = Popen([GAP, '-q', '-o', MEMORY, '-x', '120'], stdin=PIPE, stdout=PIPE, stderr=STDOUT,encoding='utf8')
-
-    # For some reason, the first command outputs an additional empty line at the beginning
-    with open(DUMPFILE, mode='w') as dumpfile:
-        writeline(proc.stdin, '"Start GAP";\n')
-        # Some people might configure GAP to load additional packages etc.
-        # which might produce additional output on startup.
-        time.sleep(DELAY)
-        readlines(proc.stdout, dumpfile)
-
     # Create LaTeX file with GAPDoc
     writeline(proc.stdin, 'r := rec(content := ReadAll(InputTextFile("%s")), name := "Example");;\n' % TMPFILE)
     writeline(proc.stdin, 'str := "";;\n')
     writeline(proc.stdin, 'GAPDoc2LaTeXProcs.Example(r, str);;\n')
-    writeline(proc.stdin, 'PrintTo("%s", str);;\n' % LATEXFILE)
+    writeline(proc.stdin, 'stream := OutputTextFile("%s", false);;\n' % LATEXFILE)
+    writeline(proc.stdin, 'SetPrintFormattingStatus(stream, false);;\n')
+    writeline(proc.stdin, 'PrintTo(stream, str);;\n')
 
     # Wait for GAP to finish before proceeding
     with open(DUMPFILE, mode='w') as dumpfile:
